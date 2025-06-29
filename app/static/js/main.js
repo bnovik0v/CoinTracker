@@ -557,6 +557,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="badge bg-primary rounded-pill fs-6">${info.total_mentions}</div>
                         </div>
                         
+                        <div class="mb-3">
+                            <a href="https://coinmarketcap.com/currencies/${tokenSearchInput.value.trim().toLowerCase()}/" 
+                               target="_blank" 
+                               class="btn btn-outline-primary w-100">
+                                <i class="bi bi-currency-exchange me-1"></i> View on CoinMarketCap
+                            </a>
+                        </div>
+                        
                         <div class="token-stats-card p-3 mb-3 rounded" style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2);">
                             <div class="d-flex justify-content-between">
                                 <div>
@@ -719,12 +727,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <div class="fw-semibold">@${tweet.author || 'user'}</div>
                                     <div class="text-body-secondary small">${formattedDate}</div>
                                 </div>
-                                <a href="https://x.com/${tweet.author || 'user'}/status/${tweet.twitter_id}" 
-                                   target="_blank" 
+                                    <a href="https://x.com/${tweet.author || 'user'}/status/${tweet.twitter_id}" 
+                                       target="_blank" 
                                    class="ms-auto btn btn-sm btn-outline-secondary rounded-pill" 
-                                   title="View on X">
-                                    <i class="bi bi-twitter-x"></i>
-                                </a>
+                                       title="View on X">
+                                        <i class="bi bi-twitter-x"></i>
+                                    </a>
                             </div>
                             
                             <div class="tweet-content mb-2">
