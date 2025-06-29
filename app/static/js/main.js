@@ -731,10 +731,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${isLongTweet ? 
                                     `<div>
                                         <div id="${tweetId}-short">${highlightedText.substring(0, 180)}... 
-                                            <button class="btn btn-sm btn-link p-0 toggle-tweet" data-tweet-id="${tweetId}" data-expanded="false">Show more</button>
+                                            <button class="btn btn-sm btn-link p-0 toggle-tweet" data-tweet-id="${tweetId}" data-expanded="false"> Show more</button>
                                         </div>
                                         <div id="${tweetId}-full" style="display: none;">${highlightedText}
-                                            <button class="btn btn-sm btn-link p-0 toggle-tweet" data-tweet-id="${tweetId}" data-expanded="true">Show less</button>
+                                            <button class="btn btn-sm btn-link p-0 toggle-tweet" data-tweet-id="${tweetId}" data-expanded="true"> Show less</button>
                                         </div>
                                     </div>` : 
                                     `<div>${highlightedText}</div>`
