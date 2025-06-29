@@ -41,6 +41,90 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // --- Gauge Chart Rendering ---
+    const renderSentimentGauge = (score) => {
+        // Convert score to a 0-100 scale for the gauge
+        // Sentiment scores typically range from -1 to 1
+        const normalizedScore = ((parseFloat(score) + 1) / 2) * 100;
+        
+        // Define colors based on sentiment ranges
+        const getGaugeColor = (value) => {
+            if (value < 40) return '#dc3545'; // Negative - red
+            if (value > 60) return '#28a745'; // Positive - green
+            return '#6c757d'; // Neutral - gray
+        };
+        
+        const options = {
+            series: [normalizedScore],
+            chart: {
+                height: 200,
+                type: 'radialBar',
+                offsetY: -10,
+                sparkline: {
+                    enabled: true
+                }
+            },
+            plotOptions: {
+                radialBar: {
+                    startAngle: -90,
+                    endAngle: 90,
+                    track: {
+                        background: '#e7e7e7',
+                        strokeWidth: '97%',
+                        margin: 5,
+                        dropShadow: {
+                            enabled: false
+                        }
+                    },
+                    dataLabels: {
+                        name: {
+                            show: false
+                        },
+                        value: {
+                            offsetY: -2,
+                            fontSize: '22px',
+                            formatter: function(val) {
+                                // Convert back to original sentiment score range (-1 to 1)
+                                const originalScore = (((val / 100) * 2) - 1).toFixed(3);
+                                return originalScore;
+                            }
+                        }
+                    },
+                    hollow: {
+                        margin: 0,
+                        size: '50%'
+                    }
+                }
+            },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shade: 'dark',
+                    type: 'horizontal',
+                    shadeIntensity: 0.5,
+                    gradientToColors: [getGaugeColor(normalizedScore)],
+                    inverseColors: true,
+                    opacityFrom: 1,
+                    opacityTo: 1,
+                    stops: [0, 100]
+                }
+            },
+            stroke: {
+                lineCap: 'round'
+            },
+            labels: ['Sentiment']
+        };
+        
+        // Destroy previous chart if it exists
+        if (sentimentGaugeChart) {
+            sentimentGaugeChart.destroy();
+        }
+        
+        // Create new chart
+        sentimentGaugeChart = new ApexCharts(document.querySelector('#sentiment-gauge-chart'), options);
+        sentimentGaugeChart.render();
+    };
+    
     // --- Data Fetching & Rendering ---
     const fetchTopTokens = async () => {
         showLoading(topTokensList);
@@ -142,6 +226,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Global variable to store the sentiment gauge chart
+    let sentimentGaugeChart = null;
+    
     const renderTokenInfo = (info) => {
         const score = info.average_sentiment_score.toFixed(3);
         let sentimentBadge;
@@ -161,11 +248,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="col-md-5 d-flex flex-column justify-content-center align-items-center text-center">
                     <h6 class="text-body-secondary mb-1">Avg. Sentiment Score</h6>
-                    <h2 class="display-5 fw-bold mb-2">${score}</h2>
+                    <div id="sentiment-gauge-chart"></div>
                     ${sentimentBadge}
                 </div>
             </div>
         `;
+        
+        // Render the gauge chart after the DOM is updated
+        setTimeout(() => renderSentimentGauge(score), 0);
 
         const keywordsContainer = document.getElementById('top-keywords-container');
         const keywordsList = document.getElementById('top-keywords-list');
