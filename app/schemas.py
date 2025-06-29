@@ -1,0 +1,54 @@
+from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime
+import uuid
+from typing import List, Optional
+from .models import SentimentEnum
+
+
+class CoinTweetAnalysisBase(BaseModel):
+    coin_name: str
+    publish_date: datetime
+    sentiment: SentimentEnum
+    keywords: List[str]
+    text: str
+
+class CoinTweetAnalysisCreate(CoinTweetAnalysisBase):
+    pass
+
+class CoinTweetAnalysis(CoinTweetAnalysisBase):
+    id: uuid.UUID
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TokenScore(BaseModel):
+    coin_name: str
+    score: int
+
+class KeywordCount(BaseModel):
+    keyword: str
+    count: int
+
+
+class TokenAggregateInfo(BaseModel):
+    coin_name: str
+    total_mentions: int
+    positive_mentions: int
+    negative_mentions: int
+    neutral_mentions: int
+    average_sentiment_score: float
+    top_keywords: Optional[List[KeywordCount]] = None
+
+
+class Tweet(BaseModel):
+    text: str
+    publish_date: datetime
+
+
+class HourlySentiment(BaseModel):
+    hour: datetime
+    average_sentiment_score: float = Field(..., alias='avg_sentiment')
+
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True

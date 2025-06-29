@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinTracker Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        .list-group-item-action {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-graph-up-arrow"></i> CoinTracker</a>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        <div class="row g-4">
+            <!-- Left Column -->
+            <div class="col-lg-4">
+                <div class="card sticky-top" style="top: 20px;">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-trophy-fill"></i> Top Tokens</h5>
+                        <div class="btn-group" role="group" id="time-range-selector">
+                            <input type="radio" class="btn-check" name="timeRange" id="btn-day" autocomplete="off" data-range="day">
+                            <label class="btn btn-sm btn-outline-primary" for="btn-day">Day</label>
+                            <input type="radio" class="btn-check" name="timeRange" id="btn-hour" autocomplete="off" data-range="hour" checked>
+                            <label class="btn btn-sm btn-outline-primary" for="btn-hour">Hour</label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="top-tokens-list">
+                            <!-- Top tokens list will be injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-search"></i> Token Lookup</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="input-group">
+                            <input type="text" id="token-search-input" class="form-control" placeholder="Enter token name (e.g. BTC)">
+                            <button class="btn btn-primary" type="button" id="token-search-btn">Search</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="token-details-section" class="d-none">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-bar-chart-line-fill"></i> Hourly Sentiment Trend (24h)</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="sentiment-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-info-circle-fill"></i> Token Information</h5>
+                        </div>
+                        <div class="card-body" id="token-info-details">
+                        </div>
+                        <div class="card-body border-top" id="top-keywords-container">
+                            <h5 class="card-title">Top Keywords</h5>
+                            <div id="top-keywords-list"></div>
+                            <!-- Token aggregate info will be injected by JS -->
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-twitter"></i> Recent Mentions</h5>
+                        </div>
+                        <div class="card-body" id="latest-tweets-list">
+                            <!-- Latest tweets will be injected by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div id="token-placeholder" class="text-center text-body-secondary">
+                    <i class="bi bi-info-circle" style="font-size: 3rem;"></i>
+                    <p class="mt-2">Search for a token or select one from the list to view details.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="container text-center text-body-secondary mt-4 py-3">
+        <p>&copy; 2025 CoinTracker. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
