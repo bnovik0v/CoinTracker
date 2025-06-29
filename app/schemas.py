@@ -23,7 +23,7 @@ class CoinTweetAnalysis(CoinTweetAnalysisBase):
 
 class TokenScore(BaseModel):
     coin_name: str
-    score: int
+    score: float
 
 class KeywordCount(BaseModel):
     keyword: str

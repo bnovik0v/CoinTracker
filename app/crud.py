@@ -1,7 +1,7 @@
 from collections import Counter
 
 from sqlalchemy.orm import Session
-from sqlalchemy import func, case, select
+from sqlalchemy import func, case, Float, select
 from . import models
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
@@ -23,14 +23,22 @@ def get_tokens_by_score(db: Session, time_range: str, limit: int):
     else:
         return []
 
+    score = (
+        func.sum(models.CoinTweetAnalysis.weight)
+        * (
+            func.count(func.distinct(models.CoinTweetAnalysis.author)).cast(Float)
+            / func.count(models.CoinTweetAnalysis.id)
+        )
+    ).label("score")
+
     results = (
         db.query(
             models.CoinTweetAnalysis.coin_name,
-            func.sum(models.CoinTweetAnalysis.weight).label("score"),
+            score,
         )
         .filter(models.CoinTweetAnalysis.publish_date >= start_time)
         .group_by(models.CoinTweetAnalysis.coin_name)
-        .order_by(func.sum(models.CoinTweetAnalysis.weight).desc())
+        .order_by(score.desc())
         .limit(limit)
         .all()
     )
