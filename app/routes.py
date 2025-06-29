@@ -10,11 +10,11 @@ router = APIRouter()
 @router.get("/tokens/top", response_model=List[schemas.TokenScore])
 def get_top_tokens(
     limit: int = Query(10, ge=1, le=100),
-    time_range: str = Query("day", regex="^(hour|day)$"),
+    time_range: str = Query("day", regex="^(hour|3hr|6hr|12hr|day)$"),
     db: Session = Depends(get_session),
 ):
     """
-    Get top N tokens by sentiment score for the last hour or day.
+    Get top N tokens by sentiment score for the specified time range (hour, 3hr, 6hr, 12hr, day).
     """
     tokens = crud.get_tokens_by_score(db, time_range=time_range, limit=limit)
     return tokens
@@ -22,11 +22,11 @@ def get_top_tokens(
 @router.get("/tokens/{coin_name}/info", response_model=schemas.TokenAggregateInfo)
 def get_token_info(
     coin_name: str,
-    time_range: str = Query("day", regex="^(hour|day)$"),
+    time_range: str = Query("day", regex="^(hour|3hr|6hr|12hr|day)$"),
     db: Session = Depends(get_session),
 ):
     """
-    Get aggregated information about a token for the last hour or day.
+    Get aggregated information about a token for the specified time range (hour, 3hr, 6hr, 12hr, day).
     """
     token_info = crud.get_token_aggregate_info(db, coin_name=coin_name, time_range=time_range)
     if token_info is None:

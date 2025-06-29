@@ -97,6 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoading(tokenInfoDetails);
         showLoading(latestTweetsList);
         
+        // Get the selected time range
+        const selectedRange = document.querySelector('input[name="timeRange"]:checked').dataset.range;
+        
         // Make sure the chart container exists and show loading state
         // Find the card body that contains the sentiment chart
         const chartContainers = document.querySelectorAll('#token-details-section .card-body');
@@ -106,8 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             }
         }
-
-        const selectedRange = document.querySelector('input[name="timeRange"]:checked').dataset.range;
 
         const infoUrl = `${API_BASE_URL}/tokens/${coinName}/info?time_range=${selectedRange}`;
         const tweetsUrl = `${API_BASE_URL}/tokens/${coinName}/tweets`;

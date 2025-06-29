@@ -8,10 +8,16 @@ from typing import List, Optional
 
 def get_tokens_by_score(db: Session, time_range: str, limit: int):
     """
-    Get N tokens for the last hour / last day sorted by sentiment score.
+    Get N tokens for the specified time range sorted by sentiment score.
     """
     if time_range == "hour":
         start_time = datetime.now(timezone.utc) - timedelta(hours=1)
+    elif time_range == "3hr":
+        start_time = datetime.now(timezone.utc) - timedelta(hours=3)
+    elif time_range == "6hr":
+        start_time = datetime.now(timezone.utc) - timedelta(hours=6)
+    elif time_range == "12hr":
+        start_time = datetime.now(timezone.utc) - timedelta(hours=12)
     elif time_range == "day":
         start_time = datetime.now(timezone.utc) - timedelta(days=1)
     else:
@@ -32,10 +38,16 @@ def get_tokens_by_score(db: Session, time_range: str, limit: int):
 
 def get_token_aggregate_info(db: Session, coin_name: str, time_range: str):
     """
-    Get aggregated info about a token for the last hour / last day.
+    Get aggregated info about a token for the specified time range.
     """
     if time_range == "hour":
         start_time = datetime.now(timezone.utc) - timedelta(hours=1)
+    elif time_range == "3hr":
+        start_time = datetime.now(timezone.utc) - timedelta(hours=3)
+    elif time_range == "6hr":
+        start_time = datetime.now(timezone.utc) - timedelta(hours=6)
+    elif time_range == "12hr":
+        start_time = datetime.now(timezone.utc) - timedelta(hours=12)
     elif time_range == "day":
         start_time = datetime.now(timezone.utc) - timedelta(days=1)
     else:
