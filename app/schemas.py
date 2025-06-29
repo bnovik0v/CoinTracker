@@ -43,12 +43,15 @@ class TokenAggregateInfo(BaseModel):
 class Tweet(BaseModel):
     text: str
     publish_date: datetime
+    sentiment: SentimentEnum
+    weight: float
+    author: str | None
+    twitter_id: str | None
 
 
 class HourlySentiment(BaseModel):
     hour: datetime
     average_sentiment_score: float = Field(..., alias='avg_sentiment')
+    mentions: int = Field(..., alias='n_tweets')
 
-    class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)

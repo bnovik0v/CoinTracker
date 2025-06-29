@@ -31,6 +31,7 @@ class CoinTweetAnalysis(Base):
     sentiment = Column(Enum(SentimentEnum, name="sentiment_enum"), nullable=False, index=True)
     keywords = Column(ARRAY(String), nullable=False)  # list[str]
     text = Column(Text, nullable=False)
+    author = Column(String(255), nullable=True)
 
     # audit metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -190,15 +190,70 @@ document.addEventListener('DOMContentLoaded', () => {
             latestTweetsList.innerHTML = '<p class="text-center text-body-secondary">No recent tweets found.</p>';
             return;
         }
+        
+        const getSentimentColor = (sentiment, weight) => {
+            if (sentiment === 'positive') return '#28a745'; // green
+            if (sentiment === 'negative') return '#dc3545'; // red
+            return '#6c757d'; // gray for neutral
+        };
+        
+        const getSentimentLabel = (sentiment) => {
+            if (sentiment === 'positive') return 'Positive';
+            if (sentiment === 'negative') return 'Negative';
+            return 'Neutral';
+        };
+        
         latestTweetsList.innerHTML = `
             <div class="list-group list-group-flush">
-                ${tweets.map(tweet => `
-                    <div class="list-group-item">
-                        <p class="mb-1">${tweet.text}</p>
-                        <small class="text-body-secondary">- @${tweet.author_username} on ${new Date(tweet.publish_date).toLocaleString()}</small>
+                ${tweets.map(tweet => {
+                    const sentimentColor = getSentimentColor(tweet.sentiment, tweet.weight);
+                    const sentimentLabel = getSentimentLabel(tweet.sentiment);
+                    const tweetText = tweet.text;
+                    const isLongTweet = tweetText.length > 150;
+                    const tweetId = `tweet-${Math.random().toString(36).substr(2, 9)}`;
+                    
+                    return `
+                    <div class="list-group-item position-relative">
+                        <div class="sentiment-indicator" style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: ${sentimentColor};"></div>
+                        <div style="padding-left: 8px;">
+                            ${isLongTweet ? 
+                                `<p class="mb-1">
+                                    <span id="${tweetId}-short">${tweetText.substring(0, 150)}... </span>
+                                    <span id="${tweetId}-full" style="display: none;">${tweetText}</span>
+                                    <a href="#" class="text-primary toggle-tweet" data-tweet-id="${tweetId}" data-expanded="false">Show more</a>
+                                </p>` : 
+                                `<p class="mb-1">${tweetText}</p>`
+                            }
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-body-secondary">
+                                    - <a href="https://x.com/${tweet.author || 'user'}" target="_blank" class="text-decoration-none">@${tweet.author || 'user'}</a> 
+                                    on ${new Date(tweet.publish_date).toLocaleString()} 
+                                    <a href="https://x.com/${tweet.author || 'user'}/status/${tweet.twitter_id}" target="_blank" class="ms-1" title="View on X">
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                </small>
+                                <span class="badge" style="background-color: ${sentimentColor};">${sentimentLabel}</span>
+                            </div>
+                        </div>
                     </div>
-                `).join('')}
+                    `;
+                }).join('')}
             </div>`;
+            
+        // Add event listeners for tweet expansion
+        document.querySelectorAll('.toggle-tweet').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const tweetId = toggle.dataset.tweetId;
+                const isExpanded = toggle.dataset.expanded === 'true';
+                
+                document.getElementById(`${tweetId}-short`).style.display = isExpanded ? 'inline' : 'none';
+                document.getElementById(`${tweetId}-full`).style.display = isExpanded ? 'none' : 'inline';
+                
+                toggle.textContent = isExpanded ? 'Show more' : 'Show less';
+                toggle.dataset.expanded = isExpanded ? 'false' : 'true';
+            });
+        });
     };
 
     const renderSentimentChart = (data) => {
@@ -234,52 +289,72 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Get the newly created canvas element
         const newCanvas = document.getElementById('sentiment-chart');
-        if (!newCanvas) {
-            console.error('Failed to create new sentiment chart canvas');
-            return;
-        }
-        
         // Get the 2D context for the canvas
         const ctx = newCanvas.getContext('2d');
-        if (!ctx) {
-            console.error('Failed to get canvas context');
-            return;
-        }
-
-        const labels = data.map(d => new Date(d.hour).toLocaleTimeString());
-        const scores = data.map(d => d.avg_sentiment);
+        
+        // Prepare data for the chart
+        const labels = data.map(d => new Date(d.hour).toLocaleTimeString('en-GB', { hour: '2-digit' }) + ':00');
+        const sentimentScores = data.map(d => d.avg_sentiment);
+        const mentionCounts = data.map(d => d.n_tweets);
 
         sentimentChart = new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
                 labels: labels,
-                datasets: [{
-                    label: 'Avg. Sentiment Score',
-                    data: scores,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4
-                }]
+                datasets: [
+                    {
+                        type: 'line',
+                        label: 'Average Sentiment Score',
+                        data: sentimentScores,
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        yAxisID: 'y-sentiment',
+                        tension: 0.4,
+                        fill: true,
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Number of Mentions',
+                        data: mentionCounts,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        yAxisID: 'y-mentions',
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
                 scales: {
-                    y: {
-                        beginAtZero: false,
-                        min: -1,
-                        max: 1,
+                    x: {
+                        stacked: true,
+                    },
+                    'y-sentiment': {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
                         title: {
                             display: true,
-                            text: 'Sentiment Score'
+                            text: 'Avg. Sentiment Score'
                         }
                     },
-                    x: {
-                         title: {
+                    'y-mentions': {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
                             display: true,
-                            text: 'Time (last 24h)'
+                            text: 'Mentions'
+                        },
+                        grid: {
+                            drawOnChartArea: false, // only draw grid for sentiment axis
+                        },
+                        ticks: {
+                           beginAtZero: true
                         }
                     }
                 },

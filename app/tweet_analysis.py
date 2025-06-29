@@ -38,6 +38,7 @@ class TwitterUser(BaseModel):
     statuses_count: int
     has_photo: bool
     has_banner: bool
+    name: str | None
 
     @classmethod
     def from_scrapestorm_owner_record(cls, record: dict):
@@ -50,6 +51,7 @@ class TwitterUser(BaseModel):
             statuses_count=record["statuses_count"],
             has_photo="profile_image_url" in record,
             has_banner="profile_banner_url" in record,
+            name=record["screen_name"],
         )
 
     @staticmethod
@@ -246,6 +248,7 @@ async def main():
             "sentiment": SentimentEnum[analysis_result.sentiment],
             "keywords": analysis_result.keywords,
             "text": tweet.text,
+            "author": tweet.author.name,
         }
         db_payload.append(db_item)
 

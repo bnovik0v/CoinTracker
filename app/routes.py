@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List
+from datetime import datetime, timedelta, timezone
 from . import crud, schemas
 from .database import get_session
 
@@ -52,4 +53,32 @@ def get_hourly_sentiment(
     Get hourly sentiment data for a given token for the last 24 hours.
     """
     sentiment_data = crud.get_hourly_sentiment_by_coin(db, coin_name=coin_name)
-    return sentiment_data
+
+    now = datetime.now(timezone.utc)
+    start_of_hour = now.replace(minute=0, second=0, microsecond=0)
+    
+    # Generate all hours for the last 24 hours
+    all_hours = [start_of_hour - timedelta(hours=i) for i in range(24)]
+    
+    # Create a dictionary for quick lookups
+    sentiment_map = {
+        item.hour: item for item in sentiment_data
+    }
+    
+    # Create the full list, filling in missing data
+    full_sentiment_data = []
+    for hour in all_hours:
+        if hour in sentiment_map:
+            item = sentiment_map[hour]
+            full_sentiment_data.append(schemas.HourlySentiment.model_validate(item))
+        else:
+            full_sentiment_data.append(schemas.HourlySentiment(
+                hour=hour,
+                avg_sentiment=0.0,
+                n_tweets=0,
+            ))
+            
+    # Sort by hour ascending
+    full_sentiment_data.sort(key=lambda x: x.hour)
+
+    return full_sentiment_data
