@@ -4,6 +4,7 @@ from sqlalchemy import Column, String, DateTime, Text, Enum, Index, case, Float
 from sqlalchemy.dialects.postgresql import UUID as PGUUID, ARRAY
 from sqlalchemy.sql import func
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import and_
 from app.database import Base
 
 
@@ -132,15 +133,18 @@ class Trade(Base):
     
     @hybrid_property
     def profit_percent(self):
-        if self.sell_price is not None:
+        if self.sell_price is not None and self.buy_price != 0:
             return (self.sell_price - self.buy_price) / self.buy_price
         return None
-    
+
     @profit_percent.expression
     def profit_percent(cls):
         return case(
-            (cls.sell_price.isnot(None), (cls.sell_price - cls.buy_price) / cls.buy_price),
-            else_=None
+            (
+                and_(cls.sell_price.isnot(None), cls.buy_price != 0),
+                (cls.sell_price - cls.buy_price) / cls.buy_price,
+            ),
+            else_=None,
         )
     
     __table_args__ = (
