@@ -6,6 +6,7 @@ from . import models
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
+
 def get_tokens_by_score(db: Session, time_range: str, limit: int):
     """
     Get N tokens for the specified time range sorted by sentiment score.
@@ -230,6 +231,15 @@ def get_open_trades(db: Session):
     return db.query(models.Trade).filter(models.Trade.sell_date.is_(None)).all()
 
 
-def get_trades(db: Session, limit: int = 10, skip: int = 0):
+def get_trades(
+    db: Session, limit: int = 10, skip: int = 0, is_closed: bool | None = None
+):
     """Get all trades."""
-    return db.query(models.Trade).offset(skip).limit(limit).all()
+    # return db.query(models.Trade).filter(models.Trade.sell_date.isnot_(None) if is_closed else models.Trade.sell_date.is_(None)).offset(skip).limit(limit).all()
+    stmt = select(models.Trade)
+    if is_closed is True:
+        stmt = stmt.where(models.Trade.sell_date.isnot_(None))
+    elif is_closed is False:
+        stmt = stmt.where(models.Trade.sell_date.is_(None))
+    stmt = stmt.offset(skip).limit(limit)
+    return db.execute(stmt).all()
