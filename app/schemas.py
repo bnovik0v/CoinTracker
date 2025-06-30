@@ -63,4 +63,7 @@ class Trade(BaseModel):
     sell_date: datetime | None
     buy_price: float
     sell_price: float | None
+    profit: Optional[float]
+
+    model_config = ConfigDict(from_attributes=True)
     

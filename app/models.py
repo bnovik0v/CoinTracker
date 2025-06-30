@@ -116,6 +116,19 @@ class Trade(Base):
     sell_price = Column(Float, nullable=True)
     buy_date = Column(DateTime(timezone=True), nullable=False)
     sell_date = Column(DateTime(timezone=True), nullable=True)
+
+    @hybrid_property
+    def profit(self):
+        if self.sell_price is not None:
+            return self.sell_price - self.buy_price
+        return None
+
+    @profit.expression
+    def profit(cls):
+        return case(
+            (cls.sell_price.isnot(None), cls.sell_price - cls.buy_price),
+            else_=None
+        )
     
     __table_args__ = (
         Index("ix_trade_coin_date", "coin_name", "buy_date"),

@@ -242,4 +242,6 @@ def get_trades(
     elif is_closed is False:
         # For open trades, sell_date should be NULL
         query = query.filter(models.Trade.sell_date.is_(None))
+    # Sort by buy_date desc
+    query = query.order_by(models.Trade.buy_date.desc())
     return query.offset(skip).limit(limit).all()
