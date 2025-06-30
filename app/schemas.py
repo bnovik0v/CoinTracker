@@ -64,6 +64,7 @@ class Trade(BaseModel):
     buy_price: float
     sell_price: float | None
     profit: Optional[float]
+    profit_percent: Optional[float]
 
     model_config = ConfigDict(from_attributes=True)
     

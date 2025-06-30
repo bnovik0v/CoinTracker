@@ -130,6 +130,19 @@ class Trade(Base):
             else_=None
         )
     
+    @hybrid_property
+    def profit_percent(self):
+        if self.sell_price is not None:
+            return (self.sell_price - self.buy_price) / self.buy_price
+        return None
+    
+    @profit_percent.expression
+    def profit_percent(cls):
+        return case(
+            (cls.sell_price.isnot(None), (cls.sell_price - cls.buy_price) / cls.buy_price),
+            else_=None
+        )
+    
     __table_args__ = (
         Index("ix_trade_coin_date", "coin_name", "buy_date"),
     )
