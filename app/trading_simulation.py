@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.crud import get_tokens_by_score, get_open_trades
 from app.database import get_db
 from app.models import Trade
@@ -87,7 +87,7 @@ async def main():
             to_close_trades = []
             for t in monitored_tokens:
                 token_price = all_token_prices_dict[t.coin_name.lower()]
-                if t.buy_date < datetime.now() - timedelta(hours=1):
+                if t.buy_date < datetime.now(timezone.utc) - timedelta(hours=1):
                     to_close_trades.append(t)
                 elif token_price < t.buy_price * 0.9 or token_price > t.buy_price * 1.1:
                     to_close_trades.append(t)
@@ -95,7 +95,7 @@ async def main():
             logging.info(f"Found {len(to_close_trades)} trades to close")
 
             for t in to_close_trades:
-                t.sell_date = datetime.now()
+                t.sell_date = datetime.now(timezone.utc)
                 t.sell_price = all_token_prices_dict[t.coin_name.lower()]
                 db.add(t)
 
@@ -105,7 +105,7 @@ async def main():
                 trade = Trade(
                     coin_name=t.coin_name.lower(),
                     buy_price=all_token_prices_dict[t.coin_name.lower()],
-                    buy_date=datetime.now(),
+                    buy_date=datetime.now(timezone.utc),
                 )
                 db.add(trade)
 
