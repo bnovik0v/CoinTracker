@@ -62,5 +62,5 @@ class Trade(BaseModel):
     buy_date: datetime
     sell_date: datetime | None
     buy_price: float
-    sell_price: float
+    sell_price: float | None
     
