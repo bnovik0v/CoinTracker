@@ -295,8 +295,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectedRange = checkedInput ? checkedInput.dataset.range : 'hour';
             
             console.log('DEBUG: Fetching top tokens with time range:', selectedRange);
-            console.log(`DEBUG: About to fetch from URL: ${API_BASE_URL}/tokens/top?time_range=${selectedRange}&limit=30`);
-            const response = await fetch(`${API_BASE_URL}/tokens/top?time_range=${selectedRange}&limit=30`);
+            console.log(`DEBUG: About to fetch from URL: ${API_BASE_URL}/tokens/top?time_range=${selectedRange}&limit=15`);
+            const response = await fetch(`${API_BASE_URL}/tokens/top?time_range=${selectedRange}&limit=15`);
             console.log('DEBUG: Fetch response received:', response.status, response.statusText);
             
             if (!response.ok) throw new Error(`Network response was not ok: ${response.status}`);
@@ -652,10 +652,28 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => renderSentimentGauge(score), 100);
 
         // Handle keywords with better styling and animations
+        // First ensure the keywords container is visible
         const keywordsContainer = document.getElementById('top-keywords-container');
-        const keywordsList = document.getElementById('top-keywords-list');
+        console.log('DEBUG: Keywords rendering - keywordsContainer:', keywordsContainer);
+        console.log('DEBUG: Keywords rendering - info.top_keywords:', info.top_keywords);
         
-        if (keywordsList && info.top_keywords && info.top_keywords.length > 0) {
+        // Check if we have keywords to display
+        if (keywordsContainer && info.top_keywords && info.top_keywords.length > 0) {
+            console.log('DEBUG: Keywords rendering - keywords data available, preparing to render');
+            
+            // Make sure the keywords list container exists, create it if needed
+            let keywordsList = document.getElementById('top-keywords-list');
+            if (!keywordsList) {
+                console.log('DEBUG: Keywords rendering - creating missing keywordsList element');
+                keywordsList = document.createElement('div');
+                keywordsList.id = 'top-keywords-list';
+                // Clear container and add title + keywords list
+                keywordsContainer.innerHTML = '<h5 class="card-title">Top Keywords</h5>';
+                keywordsContainer.appendChild(keywordsList);
+            }
+            
+            console.log('DEBUG: Keywords rendering - keywordsList now available:', keywordsList);
+            
             // Sort keywords by count for better visualization
             const sortedKeywords = [...info.top_keywords].sort((a, b) => b.count - a.count);
             
@@ -670,18 +688,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const delay = `${index * 50}ms`;
                 
                 return `<span class="badge me-2 mb-2" 
-                             style="background: linear-gradient(135deg, #3b82f6, #2dd4bf); 
-                                    font-size: ${fontSize}; 
-                                    animation: fadeIn 0.5s ease forwards; 
-                                    animation-delay: ${delay}; 
-                                    opacity: 0;">
+                              style="background: linear-gradient(135deg, #3b82f6, #2dd4bf); 
+                                     font-size: ${fontSize}; 
+                                     animation: fadeIn 0.5s ease forwards; 
+                                     animation-delay: ${delay}; 
+                                     opacity: 0;">
                         ${kw.keyword} <span class="badge bg-white text-dark ms-1">${kw.count}</span>
                       </span>`;
             }).join('');
             
+            console.log('DEBUG: Keywords rendering - ensuring container is visible');
             keywordsContainer.classList.remove('d-none');
-        } else if (keywordsContainer) {
-            keywordsContainer.classList.add('d-none');
+            console.log('DEBUG: Keywords rendering - container classList:', keywordsContainer.classList);
+        } else {
+            console.log('DEBUG: Keywords rendering - conditions not met, hiding container');
+            if (keywordsContainer) {
+                keywordsContainer.classList.add('d-none');
+            }
+            
+            // Log which condition failed
+            if (!keywordsContainer) console.log('DEBUG: Keywords rendering failed - keywordsContainer element not found');
+            if (!info.top_keywords) console.log('DEBUG: Keywords rendering failed - info.top_keywords is undefined');
+            if (info.top_keywords && info.top_keywords.length === 0) console.log('DEBUG: Keywords rendering failed - info.top_keywords is empty');
         }
 
         // Show the token details section with animation
