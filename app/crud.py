@@ -235,11 +235,9 @@ def get_trades(
     db: Session, limit: int = 10, skip: int = 0, is_closed: bool | None = None
 ):
     """Get all trades."""
-    # return db.query(models.Trade).filter(models.Trade.sell_date.isnot_(None) if is_closed else models.Trade.sell_date.is_(None)).offset(skip).limit(limit).all()
-    stmt = select(models.Trade)
+    query = db.query(models.Trade)
     if is_closed is True:
-        stmt = stmt.where(models.Trade.sell_date.isnot_(None))
+        query = query.filter(models.Trade.sell_date.isnot_(None))
     elif is_closed is False:
-        stmt = stmt.where(models.Trade.sell_date.is_(None))
-    stmt = stmt.offset(skip).limit(limit)
-    return db.execute(stmt).all()
+        query = query.filter(models.Trade.sell_date.is_(None))
+    return query.offset(skip).limit(limit).all()
