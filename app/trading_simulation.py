@@ -51,7 +51,6 @@ async def main():
     Main function for the trading simulation.
     """
     logging.info("Starting trading simulation...")
-    return
     try:
         with get_db() as db:
             tokens = get_tokens_by_score(db, time_range="hour", limit=10)
