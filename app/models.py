@@ -134,7 +134,7 @@ class Trade(Base):
     @hybrid_property
     def profit_percent(self):
         if self.sell_price is not None and self.buy_price != 0:
-            return (self.sell_price - self.buy_price) / self.buy_price
+            return ((self.sell_price - self.buy_price) / self.buy_price) * 100
         return None
 
     @profit_percent.expression
@@ -142,7 +142,7 @@ class Trade(Base):
         return case(
             (
                 and_(cls.sell_price.isnot(None), cls.buy_price != 0),
-                (cls.sell_price - cls.buy_price) / cls.buy_price,
+                ((cls.sell_price - cls.buy_price) / cls.buy_price) * 100,
             ),
             else_=None,
         )

@@ -272,17 +272,4 @@ def get_trades(
         query = query.filter(models.Trade.sell_date.is_(None))
     # Sort by buy_date desc
     query = query.order_by(models.Trade.buy_date.desc())
-    trades = query.offset(skip).limit(limit).all()
-
-    if is_closed:
-        for trade in trades:
-            if trade.buy_price != 0:
-                trade.profit_percent = (
-                    (trade.sell_price - trade.buy_price) / trade.buy_price
-                ) * 100
-                trade.profit = (trade.sell_price - trade.buy_price)
-            else:
-                trade.profit_percent = 0
-                trade.profit = 0
-
-    return trades
+    return query.offset(skip).limit(limit).all()
