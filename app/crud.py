@@ -245,14 +245,16 @@ def get_overall_profit(db: Session, investment_per_trade: float = 10.0):
             total_investment += investment_per_trade
 
     if total_investment == 0:
-        return {"total_profit": 0, "profit_percentage": 0}
+        return {"total_profit": 0, "profit_percentage": 0, "total_investment": 0}
 
     profit_percentage = (total_profit / total_investment) * 100
 
     return {
         "total_profit": total_profit,
         "profit_percentage": profit_percentage,
+        "total_investment": total_investment,
     }
+
 
 def get_open_trades(db: Session):
     """Get all open trades."""
