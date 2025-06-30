@@ -41,7 +41,9 @@ def get_token_prices(tokens: List[str], vs_currency: str = "usd") -> dict:
         time.sleep(1)  # sleep for 1 second between requests
 
     all_prices = {
-        t.lower(): price_dict[vs_currency] for t, price_dict in all_prices.items()
+        t.lower(): price_dict[vs_currency]
+        for t, price_dict in all_prices.items()
+        if vs_currency in price_dict
     }
     return all_prices
 
@@ -87,9 +89,9 @@ async def main():
             to_close_trades = []
             for t in monitored_tokens:
                 token_price = all_token_prices_dict[t.coin_name.lower()]
-                if t.buy_date < datetime.now(timezone.utc) - timedelta(hours=1):
+                if t.buy_date < datetime.now(timezone.utc) - timedelta(minutes=30):
                     to_close_trades.append(t)
-                elif token_price < t.buy_price * 0.9 or token_price > t.buy_price * 1.1:
+                elif token_price < t.buy_price * 0.95 or token_price > t.buy_price * 1.05:
                     to_close_trades.append(t)
 
             logging.info(f"Found {len(to_close_trades)} trades to close")
