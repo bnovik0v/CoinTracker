@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const profitClass = profitValue > 0 ? 'profit-positive' : (profitValue < 0 ? 'profit-negative' : 'profit-neutral');
                 const profitValueText = profitValue !== null ? `${formatPrice(profitValue)} USD` : 'N/A';
-                const profitPercentText = profitPercent !== null ? [(${profitPercent.toFixed(2)}%)](cci:1://file:///home/borislav/VSCode/CoinTracker/app/trading_simulation.py:48:0-118:52) : '';
+                const profitPercentText = profitPercent !== null ? `(${profitPercent.toFixed(2)}%)` : '';
 
                 dealDetailsHtml = `
                     <p class="mb-1 small text-body-secondary">Bought: ${formatPrice(deal.buy_price)} USD on ${buyDate}</p>
