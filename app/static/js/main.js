@@ -386,6 +386,63 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // Function to load tweets with pagination support
+    async function loadTweets(coinName, skip = 0, append = false) {
+        const limit = 5;
+        try {
+            // Show loading state on the load more button if appending
+            const loadMoreButton = document.getElementById('load-more-tweets');
+            if (append && loadMoreButton) {
+                loadMoreButton.textContent = 'Loading...';
+                loadMoreButton.disabled = true;
+            } else if (!append) {
+                // If not appending (initial load), show loading in the tweets container
+                showLoading(latestTweetsList);
+            }
+            
+            const response = await fetch(`${API_BASE_URL}/tokens/${coinName}/tweets?skip=${skip}&limit=${limit}`);
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch tweets: ${response.status}`);
+            }
+            
+            const tweets = await response.json();
+            
+            // If we're appending and got no tweets, handle the end of the list
+            if (append && (!tweets || tweets.length === 0)) {
+                const loadMoreButton = document.getElementById('load-more-tweets');
+                if (loadMoreButton) {
+                    loadMoreButton.style.display = 'none';
+                    
+                    // Show a message indicating no more tweets
+                    const endMessage = document.createElement('div');
+                    endMessage.className = 'text-center text-muted my-3';
+                    endMessage.innerHTML = '<small>No more tweets to load</small>';
+                    loadMoreButton.parentNode.insertBefore(endMessage, loadMoreButton.nextSibling);
+                }
+            } else {
+                // Otherwise render as normal
+                renderLatestTweets(tweets, append, coinName, skip);
+            }
+            
+            // Return the tweets for other uses
+            return tweets;
+        } catch (error) {
+            console.error('Error loading tweets:', error);
+            
+            // Show error in the tweets container
+            if (!append) {
+                showError(latestTweetsList, 'Failed to load tweets.');
+            } else if (loadMoreButton) {
+                // Reset the load more button if there was an error while appending
+                loadMoreButton.textContent = 'Load More Tweets';
+                loadMoreButton.disabled = false;
+            }
+            
+            return [];
+        }
+    }
+
     const fetchAllTokenData = async (coinName) => {
         console.log('DEBUG: fetchAllTokenData function called with:', coinName);
         try {
@@ -419,44 +476,41 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Construct the API URLs
             const infoUrl = `${API_BASE_URL}/tokens/${coinName}/info`;
-            const tweetsUrl = `${API_BASE_URL}/tokens/${coinName}/tweets`;
             const sentimentUrl = `${API_BASE_URL}/tokens/${coinName}/sentiment/hourly`;
             
-            console.log('Fetching from URLs:', { infoUrl, tweetsUrl, sentimentUrl });
+            console.log('Fetching from URLs:', { infoUrl, sentimentUrl });
             
-            // Fetch all data in parallel
-            const [infoRes, tweetsRes, sentimentRes] = await Promise.all([
+            // Fetch token info and sentiment data in parallel
+            const [infoRes, sentimentRes] = await Promise.all([
                 fetch(infoUrl),
-                fetch(tweetsUrl),
                 fetch(sentimentUrl)
             ]);
             
             console.log('API responses received:', {
                 info: { status: infoRes.status, ok: infoRes.ok },
-                tweets: { status: tweetsRes.status, ok: tweetsRes.ok },
                 sentiment: { status: sentimentRes.status, ok: sentimentRes.ok }
             });
             
-            if (!infoRes.ok || !tweetsRes.ok || !sentimentRes.ok) {
+            if (!infoRes.ok || !sentimentRes.ok) {
                 const errorMsg = infoRes.status === 404 ? 'Token not found or no mentions.' : 'Failed to fetch token info.';
                 throw new Error(errorMsg);
             }
             
-            const [info, tweets, sentiment] = await Promise.all([
+            const [info, sentiment] = await Promise.all([
                 infoRes.json(),
-                tweetsRes.json(),
                 sentimentRes.json()
             ]);
             
+            // Load tweets separately using the new loadTweets function
+            await loadTweets(coinName, 0); // This will handle rendering the tweets
+            
             console.log('Data received:', { 
                 info: 'Token info received', 
-                tweets: `${tweets.length} tweets received`,
                 sentiment: `${sentiment.length} sentiment data points received`
             });
             
-            // Render all components with the fetched data
+            // Render other components with the fetched data
             renderTokenInfo(info);
-            renderLatestTweets(tweets);
             renderSentimentChart(sentiment);
         } catch (error) {
             console.error('Error fetching token data:', error);
@@ -641,7 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const renderLatestTweets = (tweets) => {
+    const renderLatestTweets = (tweets, append = false, coinName = null, currentSkip = 0) => {
         // Find the tweets content container
         const tweetsContent = latestTweetsList.querySelector('.tweets-content');
         
@@ -653,6 +707,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
             hideLoading(latestTweetsList);
             return;
+        }
+        
+        // Check if we already have a load more button, if not create one
+        let loadMoreButton = document.getElementById('load-more-tweets');
+        if (!loadMoreButton) {
+            loadMoreButton = document.createElement('button');
+            loadMoreButton.id = 'load-more-tweets';
+            loadMoreButton.className = 'btn btn-primary w-100 mt-3';
+            loadMoreButton.textContent = 'Load More Tweets';
+            
+            // Add it after the tweets content container
+            tweetsContent.parentNode.insertBefore(loadMoreButton, tweetsContent.nextSibling);
+        }
+        
+        // Reset button state
+        loadMoreButton.disabled = false;
+        loadMoreButton.textContent = 'Load More Tweets';
+        
+        // Show or hide the load more button based on whether we got a full page of results
+        if (tweets.length < 5) {
+            loadMoreButton.style.display = 'none'; // Hide if no more tweets to load
+        } else {
+            loadMoreButton.style.display = 'block';
+            // Set up the click handler for the load more button
+            if (coinName) {
+                loadMoreButton.onclick = () => loadTweets(coinName, currentSkip + 5, true);
+            }
         }
         
         const getSentimentColor = (sentiment) => {
@@ -699,8 +780,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Create a delay for staggered animation
         const getAnimationDelay = (index) => `${index * 80}ms`;
-        tweetsContent.innerHTML = `
-            <div class="list-group list-group-flush">
+        // If appending, keep existing content, otherwise replace it
+        if (!append) {
+            tweetsContent.innerHTML = '';
+        }
+        
+        // Create a container for the new tweets
+        const newTweetsContainer = document.createElement('div');
+        newTweetsContainer.className = 'list-group list-group-flush';
+        newTweetsContainer.innerHTML = `
                 ${tweets.map((tweet, index) => {
                     const sentimentColor = getSentimentColor(tweet.sentiment);
                     const sentimentIcon = getSentimentIcon(tweet.sentiment);
@@ -763,9 +851,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     `;
                 }).join('')}
-            </div>
-            
-            <style>
+            `;
+        
+        // Append the new tweets to the tweets content
+        tweetsContent.appendChild(newTweetsContainer);
+        
+        // Add style if it doesn't exist yet
+        if (!document.getElementById('tweet-styles')) {
+            const styleElement = document.createElement('style');
+            styleElement.id = 'tweet-styles';
+            styleElement.textContent = `
                 .tweet-card {
                     transition: transform 0.2s ease, box-shadow 0.2s ease;
                     border-left: none;
@@ -794,8 +889,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 .toggle-tweet:hover {
                     text-decoration: underline;
                 }
-            </style>`;
-            
+            `;
+            document.head.appendChild(styleElement);
+        }
+        
         // Hide loading spinner after content is rendered
         hideLoading(latestTweetsList);
             

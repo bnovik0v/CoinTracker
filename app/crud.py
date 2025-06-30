@@ -128,7 +128,7 @@ def get_token_aggregate_info(db: Session, coin_name: str, time_range: str):
         "top_keywords": top_keywords,
     }
 
-def get_latest_tweets_by_coin(db: Session, coin_name: str, limit: int = 5):
+def get_latest_tweets_by_coin(db: Session, coin_name: str, skip: int = 0, limit: int = 5):
     """
     Get the latest N tweets for a given coin.
     """
@@ -136,6 +136,7 @@ def get_latest_tweets_by_coin(db: Session, coin_name: str, limit: int = 5):
         db.query(models.CoinTweetAnalysis)
         .filter(models.CoinTweetAnalysis.coin_name == coin_name)
         .order_by(models.CoinTweetAnalysis.publish_date.desc())
+        .offset(skip)
         .limit(limit)
         .all()
     )

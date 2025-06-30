@@ -36,12 +36,16 @@ def get_token_info(
 @router.get("/tokens/{coin_name}/tweets", response_model=List[schemas.Tweet])
 def get_latest_tweets(
     coin_name: str,
+    skip: int = 0,
+    limit: int = 5,
     db: Session = Depends(get_session),
 ):
     """
-    Get the 5 most recent tweets for a given token.
+    Get the most recent tweets for a given token, with pagination support.
     """
-    tweets = crud.get_latest_tweets_by_coin(db, coin_name=coin_name, limit=5)
+    tweets = crud.get_latest_tweets_by_coin(
+        db, coin_name=coin_name, skip=skip, limit=limit
+    )
     return tweets
 
 @router.get("/tokens/{coin_name}/sentiment/hourly", response_model=List[schemas.HourlySentiment])
