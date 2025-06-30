@@ -95,14 +95,26 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title text-body-secondary">Overall Profit</h5>
-                        {% if profit_data.profit_percentage > 0 %}
-                            <h2 class="display-4 fw-bold text-success">+{{ profit_data.profit_percentage|round(5) }}%</h2>
-                        {% elif profit_data.profit_percentage < 0 %}
-                            <h2 class="display-4 fw-bold text-danger">{{ profit_data.profit_percentage|round(5) }}%</h2>
-                        {% else %}
-                            <h2 class="display-4 fw-bold">{{ profit_data.profit_percentage|round(5) }}%</h2>
-                        {% endif %}
-                        <p class="text-body-secondary mb-0">Based on a $10 investment per trade.</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-body-secondary mb-0">Percentage</p>
+                                {% if profit_data.profit_percentage > 0 %}
+                                    <h2 class="display-4 fw-bold text-success">+{{ profit_data.profit_percentage|round(5) }}%</h2>
+                                {% elif profit_data.profit_percentage < 0 %}
+                                    <h2 class="display-4 fw-bold text-danger">{{ profit_data.profit_percentage|round(5) }}%</h2>
+                                {% else %}
+                                    <h2 class="display-4 fw-bold">{{ profit_data.profit_percentage|round(5) }}%</h2>
+                                {% endif %}
+                            </div>
+                            <div class="text-end">
+                                <p class="text-body-secondary mb-0">Total (USD)</p>
+                                {% set profit_value = profit_data.total_profit|round(2) %}
+                                <h2 class="display-4 fw-bold {% if profit_value > 0 %}text-success{% elif profit_value < 0 %}text-danger{% endif %}">
+                                    ${{ profit_value }}
+                                </h2>
+                            </div>
+                        </div>
+                        <p class="text-body-secondary mb-0 mt-2">Based on a $10 investment per trade.</p>
                     </div>
                 </div>
             </div>
