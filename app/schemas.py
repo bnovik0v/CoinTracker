@@ -55,3 +55,12 @@ class HourlySentiment(BaseModel):
     mentions: int = Field(..., alias='n_tweets')
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
+class Trade(BaseModel):
+    coin_name: str
+    buy_date: datetime
+    sell_date: datetime | None
+    buy_price: float
+    sell_price: float
+    

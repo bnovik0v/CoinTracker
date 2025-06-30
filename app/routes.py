@@ -86,3 +86,14 @@ def get_hourly_sentiment(
     full_sentiment_data.sort(key=lambda x: x.hour)
 
     return full_sentiment_data
+
+@router.get("/trades", response_model=List[schemas.Trade])
+def get_trades(
+    limit: int = Query(10, ge=1, le=100),
+    skip: int = Query(0, ge=0),
+    db: Session = Depends(get_session),
+):
+    """
+    Get all trades.
+    """
+    return crud.get_trades(db, limit=limit, skip=skip)

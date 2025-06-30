@@ -44,6 +44,7 @@ def get_tokens_by_score(db: Session, time_range: str, limit: int):
     )
     return results
 
+
 def get_token_aggregate_info(db: Session, coin_name: str, time_range: str):
     """
     Get aggregated info about a token for the specified time range.
@@ -66,19 +67,31 @@ def get_token_aggregate_info(db: Session, coin_name: str, time_range: str):
             func.count(models.CoinTweetAnalysis.id).label("total_mentions"),
             func.sum(
                 case(
-                    (models.CoinTweetAnalysis.sentiment == models.SentimentEnum.positive, 1),
+                    (
+                        models.CoinTweetAnalysis.sentiment
+                        == models.SentimentEnum.positive,
+                        1,
+                    ),
                     else_=0,
                 )
             ).label("positive_count"),
             func.sum(
                 case(
-                    (models.CoinTweetAnalysis.sentiment == models.SentimentEnum.negative, 1),
+                    (
+                        models.CoinTweetAnalysis.sentiment
+                        == models.SentimentEnum.negative,
+                        1,
+                    ),
                     else_=0,
                 )
             ).label("negative_count"),
             func.sum(
                 case(
-                    (models.CoinTweetAnalysis.sentiment == models.SentimentEnum.neutral, 1),
+                    (
+                        models.CoinTweetAnalysis.sentiment
+                        == models.SentimentEnum.neutral,
+                        1,
+                    ),
                     else_=0,
                 )
             ).label("neutral_count"),
@@ -128,7 +141,10 @@ def get_token_aggregate_info(db: Session, coin_name: str, time_range: str):
         "top_keywords": top_keywords,
     }
 
-def get_latest_tweets_by_coin(db: Session, coin_name: str, skip: int = 0, limit: int = 5):
+
+def get_latest_tweets_by_coin(
+    db: Session, coin_name: str, skip: int = 0, limit: int = 5
+):
     """
     Get the latest N tweets for a given coin.
     """
@@ -141,6 +157,7 @@ def get_latest_tweets_by_coin(db: Session, coin_name: str, skip: int = 0, limit:
         .all()
     )
 
+
 def get_hourly_sentiment_by_coin(db: Session, coin_name: str):
     """
     Get the average sentiment for a coin for the last 24 hours, grouped by hour.
@@ -149,15 +166,17 @@ def get_hourly_sentiment_by_coin(db: Session, coin_name: str):
 
     return (
         db.query(
-            func.date_trunc('hour', models.CoinTweetAnalysis.publish_date).label('hour'),
-            func.count().label('n_tweets'),
-            func.avg(models.CoinTweetAnalysis.weight).label('avg_sentiment'),
-            func.sum(models.CoinTweetAnalysis.weight).label('sentiment_score')
+            func.date_trunc("hour", models.CoinTweetAnalysis.publish_date).label(
+                "hour"
+            ),
+            func.count().label("n_tweets"),
+            func.avg(models.CoinTweetAnalysis.weight).label("avg_sentiment"),
+            func.sum(models.CoinTweetAnalysis.weight).label("sentiment_score"),
         )
         .filter(models.CoinTweetAnalysis.coin_name == coin_name)
         .filter(models.CoinTweetAnalysis.publish_date >= start_time)
-        .group_by('hour')
-        .order_by('hour')
+        .group_by("hour")
+        .order_by("hour")
         .all()
     )
 
@@ -168,28 +187,32 @@ def aggregate_sentiment(
     coins: Optional[List[str]] = None,
     start: datetime,
     end: datetime,
-    bucket: str = "hour",       # 'minute' · 'hour' · 'day' · 'week' · 'month' …
+    bucket: str = "hour",  # 'minute' · 'hour' · 'day' · 'week' · 'month' …
 ):
     """
     Aggregate sentiment data for specified coins within a time range, bucketed by time period.
-    
+
     Args:
         db: Database session
         coins: Optional list of coin names to filter by
         start: Start datetime for the query range
         end: End datetime for the query range
         bucket: Time bucket size ('minute', 'hour', 'day', 'week', 'month')
-        
+
     Returns:
         List of tuples with (coin_name, bucket, n_tweets, score, avg_score)
     """
     stmt = (
         select(
             models.CoinTweetAnalysis.coin_name,
-            func.date_trunc(bucket, models.CoinTweetAnalysis.publish_date).label("bucket"),
+            func.date_trunc(bucket, models.CoinTweetAnalysis.publish_date).label(
+                "bucket"
+            ),
             func.count().label("n_tweets"),
             func.sum(models.CoinTweetAnalysis.weight).label("score"),
-            (func.sum(models.CoinTweetAnalysis.weight) / func.count()).label("avg_score"),
+            (func.sum(models.CoinTweetAnalysis.weight) / func.count()).label(
+                "avg_score"
+            ),
         )
         .where(models.CoinTweetAnalysis.publish_date.between(start, end))
         .group_by(models.CoinTweetAnalysis.coin_name, "bucket")
@@ -205,3 +228,8 @@ def aggregate_sentiment(
 def get_open_trades(db: Session):
     """Get all open trades."""
     return db.query(models.Trade).filter(models.Trade.sell_date.is_(None)).all()
+
+
+def get_trades(db: Session, limit: int = 10, skip: int = 0):
+    """Get all trades."""
+    return db.query(models.Trade).offset(skip).limit(limit).all()
