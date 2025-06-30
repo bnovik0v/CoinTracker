@@ -226,6 +226,34 @@ def aggregate_sentiment(
     return db.execute(stmt).all()
 
 
+def get_overall_profit(db: Session, investment_per_trade: float = 10.0):
+    """Calculate the overall profit from all closed trades."""
+    closed_trades = (
+        db.query(models.Trade).filter(models.Trade.sell_date.isnot(None)).all()
+    )
+
+    total_profit = 0
+    total_investment = 0
+
+    for trade in closed_trades:
+        if trade.buy_price > 0:
+            # Calculate the number of coins bought for the given investment
+            coins_bought = (investment_per_trade / trade.buy_price) if trade.buy_price > 0 else 0
+            # Calculate the profit for this trade
+            profit = (trade.sell_price - trade.buy_price) * coins_bought
+            total_profit += profit
+            total_investment += investment_per_trade
+
+    if total_investment == 0:
+        return {"total_profit": 0, "profit_percentage": 0}
+
+    profit_percentage = (total_profit / total_investment) * 100
+
+    return {
+        "total_profit": total_profit,
+        "profit_percentage": profit_percentage,
+    }
+
 def get_open_trades(db: Session):
     """Get all open trades."""
     return db.query(models.Trade).filter(models.Trade.sell_date.is_(None)).all()
@@ -244,4 +272,17 @@ def get_trades(
         query = query.filter(models.Trade.sell_date.is_(None))
     # Sort by buy_date desc
     query = query.order_by(models.Trade.buy_date.desc())
-    return query.offset(skip).limit(limit).all()
+    trades = query.offset(skip).limit(limit).all()
+
+    if is_closed:
+        for trade in trades:
+            if trade.buy_price != 0:
+                trade.profit_percent = (
+                    (trade.sell_price - trade.buy_price) / trade.buy_price
+                ) * 100
+                trade.profit = (trade.sell_price - trade.buy_price)
+            else:
+                trade.profit_percent = 0
+                trade.profit = 0
+
+    return trades

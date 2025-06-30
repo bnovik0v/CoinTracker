@@ -90,6 +90,24 @@
             <p class="text-body-secondary">View your open and closed trading positions.</p>
         </header>
 
+        <div class="row mb-4">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title text-body-secondary">Overall Profit</h5>
+                        {% if profit_data.profit_percentage > 0 %}
+                            <h2 class="display-4 fw-bold text-success">+{{ profit_data.profit_percentage|round(5) }}%</h2>
+                        {% elif profit_data.profit_percentage < 0 %}
+                            <h2 class="display-4 fw-bold text-danger">{{ profit_data.profit_percentage|round(5) }}%</h2>
+                        {% else %}
+                            <h2 class="display-4 fw-bold">{{ profit_data.profit_percentage|round(5) }}%</h2>
+                        {% endif %}
+                        <p class="text-body-secondary mb-0">Based on a $10 investment per trade.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row g-4">
             <!-- Open Deals -->
             <div class="col-lg-6">

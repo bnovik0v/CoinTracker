@@ -1,10 +1,15 @@
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request, Response
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from app.settings import get_settings
-from app.routes import router as api_router
+from sqlalchemy.orm import Session
+
+from . import crud
+from .database import get_session
+from .routes import router as api_router
+from .settings import get_settings
 
 # Configure logging before importing settings
 logging.basicConfig(
@@ -43,11 +48,14 @@ app.include_router(api_router, prefix="/api")
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-
-@app.get("/trading", tags=["frontend"])
-async def trading_page(request: Request):
-    """Serves the trading simulation page."""
-    return templates.TemplateResponse("trading_simulation.html", {"request": request})
+@app.get("/trading", response_class=HTMLResponse, tags=["frontend"])
+async def trading(request: Request, db: Session = Depends(get_session)):
+    """Serves the trading simulation page with overall profit data."""
+    profit_data = crud.get_overall_profit(db)
+    return templates.TemplateResponse(
+        "trading_simulation.html",
+        {"request": request, "profit_data": profit_data},
+    )
 
 # Health check endpoint
 @app.get("/health", tags=["health"])
