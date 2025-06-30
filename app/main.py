@@ -43,6 +43,12 @@ app.include_router(api_router, prefix="/api")
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+
+@app.get("/trading", tags=["frontend"])
+async def trading_page(request: Request):
+    """Serves the trading simulation page."""
+    return templates.TemplateResponse("trading_simulation.html", {"request": request})
+
 # Health check endpoint
 @app.get("/health", tags=["health"])
 async def health_check():
