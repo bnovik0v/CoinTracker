@@ -226,11 +226,24 @@ def aggregate_sentiment(
     return db.execute(stmt).all()
 
 
-def get_overall_profit(db: Session, investment_per_trade: float = 10.0):
+def get_overall_profit(db: Session, investment_per_trade: float = 10.0, time_range: str = "day"):
     """Calculate the overall profit from all closed trades."""
     closed_trades = (
-        db.query(models.Trade).filter(models.Trade.sell_date.isnot(None)).all()
+        db.query(models.Trade).filter(models.Trade.sell_date.isnot(None))
     )
+    
+    if time_range == "hour":
+        closed_trades = closed_trades.filter(models.Trade.sell_date >= datetime.now(timezone.utc) - timedelta(hours=1))
+    elif time_range == "3hr":
+        closed_trades = closed_trades.filter(models.Trade.sell_date >= datetime.now(timezone.utc) - timedelta(hours=3))
+    elif time_range == "6hr":
+        closed_trades = closed_trades.filter(models.Trade.sell_date >= datetime.now(timezone.utc) - timedelta(hours=6))
+    elif time_range == "12hr":
+        closed_trades = closed_trades.filter(models.Trade.sell_date >= datetime.now(timezone.utc) - timedelta(hours=12))
+    elif time_range == "day":
+        closed_trades = closed_trades.filter(models.Trade.sell_date >= datetime.now(timezone.utc) - timedelta(days=1))
+
+    closed_trades = closed_trades.all()
 
     total_profit = 0
     total_investment = 0
@@ -262,7 +275,7 @@ def get_open_trades(db: Session):
 
 
 def get_trades(
-    db: Session, limit: int = 10, skip: int = 0, is_closed: bool | None = None
+    db: Session, limit: int = 10, skip: int = 0, is_closed: bool | None = None, time_range: str = "day"
 ):
     """Get all trades."""
     query = db.query(models.Trade)
@@ -272,6 +285,18 @@ def get_trades(
     elif is_closed is False:
         # For open trades, sell_date should be NULL
         query = query.filter(models.Trade.sell_date.is_(None))
+    
+    if time_range == "hour":
+        query = query.filter(models.Trade.buy_date >= datetime.now(timezone.utc) - timedelta(hours=1))
+    elif time_range == "3hr":
+        query = query.filter(models.Trade.buy_date >= datetime.now(timezone.utc) - timedelta(hours=3))
+    elif time_range == "6hr":
+        query = query.filter(models.Trade.buy_date >= datetime.now(timezone.utc) - timedelta(hours=6))
+    elif time_range == "12hr":
+        query = query.filter(models.Trade.buy_date >= datetime.now(timezone.utc) - timedelta(hours=12))
+    elif time_range == "day":
+        query = query.filter(models.Trade.buy_date >= datetime.now(timezone.utc) - timedelta(days=1))
+    
     # Sort by buy_date desc
     query = query.order_by(models.Trade.buy_date.desc())
     return query.offset(skip).limit(limit).all()

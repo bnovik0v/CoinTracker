@@ -51,10 +51,15 @@ async def read_root(request: Request):
 @app.get("/trading", response_class=HTMLResponse, tags=["frontend"])
 async def trading(request: Request, db: Session = Depends(get_session)):
     """Serves the trading simulation page with overall profit data."""
-    profit_data = crud.get_overall_profit(db)
+    profit_data_day = crud.get_overall_profit(db, time_range="day")
+    profit_data_hour = crud.get_overall_profit(db, time_range="hour")
     return templates.TemplateResponse(
         "trading_simulation.html",
-        {"request": request, "profit_data": profit_data},
+        {
+            "request": request,
+            "profit_data_day": profit_data_day,
+            "profit_data_hour": profit_data_hour,
+        },
     )
 
 # Health check endpoint

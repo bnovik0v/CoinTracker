@@ -90,35 +90,66 @@
             <p class="text-body-secondary">View your open and closed trading positions.</p>
         </header>
 
-        <div class="row mb-4">
-            <div class="col-lg-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title text-body-secondary">Overall Performance</h5>
-                        <div class="d-flex justify-content-around align-items-center">
+        <div class="row mb-4 g-4">
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-body-secondary">Overall Performance (Last 24h)</h5>
+                        <div class="d-flex justify-content-around align-items-center flex-grow-1">
                             <div class="text-center">
-                                <p class="text-body-secondary mb-0">Total Investment</p>
-                                <h2 class="display-4 fw-bold">${{ profit_data.total_investment|round(2) }}</h2>
+                                <p class="text-body-secondary mb-0 small">Total Invested</p>
+                                <h2 class="display-5 fw-bold">${{ profit_data_day.total_investment|round(2) }}</h2>
                             </div>
                             <div class="text-center">
-                                <p class="text-body-secondary mb-0">Total Profit (USD)</p>
-                                {% set profit_value = profit_data.total_profit|round(2) %}
-                                <h2 class="display-4 fw-bold {% if profit_value > 0 %}text-success{% elif profit_value < 0 %}text-danger{% endif %}">
+                                <p class="text-body-secondary mb-0 small">Profit (USD)</p>
+                                {% set profit_value = profit_data_day.total_profit|round(2) %}
+                                <h2 class="display-5 fw-bold {% if profit_value > 0 %}text-success{% elif profit_value < 0 %}text-danger{% endif %}">
                                     ${{ profit_value }}
                                 </h2>
                             </div>
                             <div class="text-center">
-                                <p class="text-body-secondary mb-0">Profit %</p>
-                                {% if profit_data.profit_percentage > 0 %}
-                                    <h2 class="display-4 fw-bold text-success">+{{ profit_data.profit_percentage|round(2) }}%</h2>
-                                {% elif profit_data.profit_percentage < 0 %}
-                                    <h2 class="display-4 fw-bold text-danger">{{ profit_data.profit_percentage|round(2) }}%</h2>
+                                <p class="text-body-secondary mb-0 small">Profit %</p>
+                                {% if profit_data_day.profit_percentage > 0 %}
+                                    <h2 class="display-5 fw-bold text-success">+{{ profit_data_day.profit_percentage|round(2) }}%</h2>
+                                {% elif profit_data_day.profit_percentage < 0 %}
+                                    <h2 class="display-5 fw-bold text-danger">{{ profit_data_day.profit_percentage|round(2) }}%</h2>
                                 {% else %}
-                                    <h2 class="display-4 fw-bold">{{ profit_data.profit_percentage|round(2) }}%</h2>
+                                    <h2 class="display-5 fw-bold">{{ profit_data_day.profit_percentage|round(2) }}%</h2>
                                 {% endif %}
                             </div>
                         </div>
-                        <p class="text-body-secondary text-center mb-0 mt-2">Based on a $10 investment per trade.</p>
+                        <p class="text-body-secondary text-center mb-0 mt-2 small">Based on a $10 investment per trade.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-body-secondary">Overall Performance (Last 1h)</h5>
+                        <div class="d-flex justify-content-around align-items-center flex-grow-1">
+                            <div class="text-center">
+                                <p class="text-body-secondary mb-0 small">Total Invested</p>
+                                <h2 class="display-5 fw-bold">${{ profit_data_hour.total_investment|round(2) }}</h2>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-body-secondary mb-0 small">Profit (USD)</p>
+                                {% set profit_value = profit_data_hour.total_profit|round(2) %}
+                                <h2 class="display-5 fw-bold {% if profit_value > 0 %}text-success{% elif profit_value < 0 %}text-danger{% endif %}">
+                                    ${{ profit_value }}
+                                </h2>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-body-secondary mb-0 small">Profit %</p>
+                                {% if profit_data_hour.profit_percentage > 0 %}
+                                    <h2 class="display-5 fw-bold text-success">+{{ profit_data_hour.profit_percentage|round(2) }}%</h2>
+                                {% elif profit_data_hour.profit_percentage < 0 %}
+                                    <h2 class="display-5 fw-bold text-danger">{{ profit_data_hour.profit_percentage|round(2) }}%</h2>
+                                {% else %}
+                                    <h2 class="display-5 fw-bold">{{ profit_data_hour.profit_percentage|round(2) }}%</h2>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p class="text-body-secondary text-center mb-0 mt-2 small">Based on a $10 investment per trade.</p>
                     </div>
                 </div>
             </div>
