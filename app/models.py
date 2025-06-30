@@ -1,6 +1,6 @@
 import uuid
 import enum
-from sqlalchemy import Column, String, DateTime, Text, Enum, Index, case
+from sqlalchemy import Column, String, DateTime, Text, Enum, Index, case, Float
 from sqlalchemy.dialects.postgresql import UUID as PGUUID, ARRAY
 from sqlalchemy.sql import func
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -103,4 +103,27 @@ class CoinTweetAnalysis(Base):
         return (
             f"<CoinTweetAnalysis id={self.id} coin='{self.coin_name}' "
             f"sentiment='{self.sentiment.value}' publish_date='{self.publish_date:%Y-%m-%d}'>"
+        )
+
+
+class Trade(Base):
+    """Stores a trade."""
+    __tablename__ = "trades"
+    
+    id = Column(PGUUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
+    coin_name = Column(String(255), nullable=False, index=True)
+    buy_price = Column(Float, nullable=False)
+    sell_price = Column(Float, nullable=True)
+    buy_date = Column(DateTime(timezone=True), nullable=False)
+    sell_date = Column(DateTime(timezone=True), nullable=True)
+    
+    __table_args__ = (
+        Index("ix_trade_coin_date", "coin_name", "buy_date"),
+    )
+    
+    def __repr__(self) -> str:  # pragma: no cover – convenience only
+        return (
+            f"<Trade id={self.id} coin='{self.coin_name}' "
+            f"buy_price='{self.buy_price}' sell_price='{self.sell_price}' "
+            f"buy_date='{self.buy_date:%Y-%m-%d}' sell_date='{self.sell_date:%Y-%m-%d}'>"
         )

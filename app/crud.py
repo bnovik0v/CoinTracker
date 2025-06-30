@@ -200,3 +200,8 @@ def aggregate_sentiment(
         stmt = stmt.where(models.CoinTweetAnalysis.coin_name.in_(coins))
 
     return db.execute(stmt).all()
+
+
+def get_open_trades(db: Session):
+    """Get all open trades."""
+    return db.query(models.Trade).filter(models.Trade.sell_date.is_(None)).all()
