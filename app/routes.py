@@ -89,7 +89,7 @@ def get_hourly_sentiment(
 
 @router.get("/trades", response_model=List[schemas.Trade])
 def get_trades(
-    is_closed: bool = Query(False),
+    is_closed: bool | None = Query(None),
     limit: int = Query(10, ge=1, le=100),
     skip: int = Query(0, ge=0),
     db: Session = Depends(get_session),
