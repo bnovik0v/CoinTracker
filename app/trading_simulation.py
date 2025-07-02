@@ -59,7 +59,7 @@ async def main():
             logging.info(f"Found {len(tokens)} tokens with score")
             
             # take with score >= 2
-            tokens = [t for t in tokens if t.score >= 2]
+            tokens = [t for t in tokens if t.score >= 1]
             logging.info(f"Found {len(tokens)} tokens with score >= 2")
 
             monitored_tokens = get_open_trades(db)
@@ -93,8 +93,14 @@ async def main():
             to_close_trades = []
             for t in monitored_tokens:
                 token_price = all_token_prices_dict[t.coin_name.lower()]
-                if t.buy_date < datetime.now(timezone.utc) - timedelta(minutes=45):
-                    to_close_trades.append(t)
+                if t.buy_date < datetime.now(timezone.utc) - timedelta(hours=1):
+                    # if price is growing, close the trade
+                    if token_price > t.buy_price:
+                        to_close_trades.append(t)
+                    # if price is falling, lets wait a bit
+                    elif token_price < t.buy_price:
+                        if t.buy_date < datetime.now(timezone.utc) - timedelta(hours=1, minutes=15):
+                            to_close_trades.append(t)
                 elif token_price < t.buy_price * 0.95 or token_price > t.buy_price * 1.05:
                     to_close_trades.append(t)
 
