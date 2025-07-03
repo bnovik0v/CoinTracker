@@ -2,6 +2,8 @@
 
 CoinTracker is a comprehensive cryptocurrency tracking and analysis platform. It leverages real-time social media data to provide insights into market sentiment and token performance. The application also features a trading simulation to test strategies based on the collected data.
 
+![image](https://github.com/user-attachments/assets/9c15a2eb-f2a0-4190-8610-b54e8c3a4cb7)
+
 ## Features
 
 - **Real-time Tweet Analysis**: Tracks and analyzes tweets related to various cryptocurrencies to gauge market sentiment.
